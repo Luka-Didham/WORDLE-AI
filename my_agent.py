@@ -60,6 +60,7 @@ class WordleAgent():
 
    #ranks frequencies of letters within the dictionary
    def LetterFrequencies(self):
+      self.dictionary_frequency = {} #reset letter frequecies
       for i in self.dictionary:
          list_of_letters = list(i)
          for x in list_of_letters:
@@ -70,7 +71,7 @@ class WordleAgent():
 
    #ranks the best word in the remaining dictionary based on "dictionary_frequency" weightings
    #Also runs easy mode gussing in certain scenarios
-   def ChooseBestWord(self):
+   def ChooseBestWord(self, guess_counter):
       self.LetterFrequencies()  # does frequency calculation for each alphabet letter
       max_word_score = 0 # highest scoring word from filtered dictionary based on letter frequency
       max_word = '' # Actual word with highest word score
@@ -78,7 +79,7 @@ class WordleAgent():
       uncommon_letters = '' # used in easy mode gussing to find letters not common to all remaining limited dictionary
       #below if statment was calibrated to only start easy mode gussing when a sufficent amount of regex matches are found and
       # When dictionary is suffeciently small enough adjusted through observations.
-      if self.mode == 'easy' and self.regex_match_counter/self.word_length > 0.3 and len(self.dictionary)/self.word_length < 6 and len(self.dictionary)>3: #threshold to start easy mode guessing
+      if self.mode == 'easy' and self.regex_match_counter/self.word_length > 0.3 and len(self.dictionary)/self.word_length < 3 and len(self.dictionary)>3 and guess_counter > 1: #threshold to start easy mode guessing
          temp_dictionary = copy.deepcopy(self.master_dictionary)
          for i in self.dictionary:
             for x in i:
@@ -142,9 +143,8 @@ class WordleAgent():
          self.regex_letters = ''
          self.easy_mode_ran = False
          # rank best word in remaining dictionary
-         return self.ChooseBestWord()  # does frequency stuff
+         return self.ChooseBestWord(guess_counter)  # does frequency stuff
       else:
-         print(self.dictionary_frequency)
          #below code adds letters to letters_needed, letters_excluded, and regex
          i = 0
          while i < list_len:
@@ -198,6 +198,7 @@ class WordleAgent():
                   break
 
       self.dictionary = temp_dictionary
-      return self.ChooseBestWord()  # does letter frequency allocation
+
+      return self.ChooseBestWord(guess_counter)  # does letter frequency allocation
 
 

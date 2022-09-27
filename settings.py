@@ -15,7 +15,7 @@ game_settings = {
 
    "numberOfGuesses": 6, # number of guesses per game
 
-   "numberOfGames": 5000, # total number of games played
+   "numberOfGames": 500, # total number of games played
 
    "mode": 'easy', # 'easy' or 'hard'
 
@@ -23,7 +23,7 @@ game_settings = {
 
    "verbose": True,
 
-   "seed": 15   # seed for random choices of words in the game, None for random seed
+   "seed": 3   # seed for random choices of words in the game, None for random seed
 
 }
 

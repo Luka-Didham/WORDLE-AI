@@ -17,6 +17,9 @@
 %
 % Adapted for AIML402 by:
 % Lech Szymanski (18/7/2022)
+%
+% Assignment Performed by:
+% Luka Didham
 
 
 \documentclass[12pt]{article}
@@ -45,118 +48,59 @@
 
 \section{Introduction}
 
-The purpose of this assignment is to create an an AI agent to play the game Wordle. Wordle is a word guessng game where the player must guess a five-letter word in six attempts.
+The purpose of this assignment is to create an an AI agent to play the game Wordle. Wordle is a word guessing game where the player must guess a five-letter word in six attempts.
 Each time you guess, you're told whether the letters in your chosen word are in the target word, and whether they are in the right place. Traditionally the target word for the game is picked from a
 dictionary of 2500 common English words. The assignment implementation differs by allowing game settings which allow multiple languages, varying word size, and includes much larger dictionaries.
-Dictionaries in the implementation contain all words at a given word size for a given language resulting in very large dictionaries, with a English five-letter game having a dictionary of nearly 12,000 words.
-The agent created is ranked by in how few moves it can correctly "guess" the target word, with a penalty that doubles the score if the agent does not guess the word within the variable maximum guess threshold.
+Dictionaries in the implementation contain all words at a given word size for a given language resulting in large dictionaries, with a English five-letter game having a dictionary of nearly 12,000 words.
+The agent created is ranked by how few moves it can correctly "guess" the target word, with a penalty that doubles the score if the agent does not guess the word within the variable maximum guess threshold.
 
 \section{Implementation Overview}
 
-My implementation supports all game settings and has varying performace between easy and hard mode discussed below. The agent has two main steps in which it repeats to find a target word.
-\begin{itemize}
-\item Filtering Remaining Dictionary: In this step we iterate through the entire remaining dictionary removing any words that can not be the target word. We decide if a word could be the possible target word based on the three factors of information detailed below. Each factor factor of information removes more words from our dictionary reducing our gussing averages. \begin{itemize}
-            \item Letter state '1': These are letters found in the target word and in the correct position. This information is recorded in a Regex statement as a positive entry. The Regex is used to match remaining words in the dictionary. If any words do not match the Regex statment containing a letter state '1' in said postion the word will be deleted from the dictionary before the following guess.
-      \end{itemize}
-      \begin{itemize}
-            \item Letter state '-1': These are letters found in the target word but in the incorrect position. This information is both recorded in a simple list "letters_included" and in the Regex statement as a negative not entry ([^XYZ]). The Regex is again used to match remaining words in the dictionary where if a word does contain the negative not letter in said postion it will be deleted. The list "letters_needed" is also iterated through for each word of the remaining dictionary. A word is removed if it does not contain all letters in the list "letters_needed"
-      \end{itemize}
-      \begin{itemize}
-            \item Letter state '0': These are letters not found in the target word in any position. These letters are only added to the "letters_excluded" list. We then iterate through the remaining dictionary removing any words which contain any of these letters.
-      \end{itemize}
-\item Choosing From Remaining Dictionary
-      \begin{itemize}
-            \item Letter Frequency Ranking: After we have a filtered dictionary containing the least amount of words possible of being our target word we also rank them based on letter frequecny. Before every guess the agent will take the new dictionary and compiles a dictionary variable "dictionary_frequency" which contains a frequency for each letter. This process is done in the "LetterFrequencies" method where the method counts each time it sees a letter. As an example the contents "dictionary_frequency" may look like \{'A': 44355 ... 'Z': 18565\} where the letter "A" has been seen 44355 times and "Z" is seen 18565 times. These frequencies change as the dictionary is fitered so is updated each run. After we have letter frequencies we rank words in the remaing d
-      \end{itemize}
-\end{itemize}
+My implementation supports all game settings and has varying performance between easy and hard mode discussed below. The agent has two main steps in which it repeats to find a target word which are,
 
-You can use the \verb$\section{}$ and \verb$\subsection{}$ commands to organise your document - either break the main body into multiple sections, or have it as a one section with subsections.   \LaTeX{} handles all the formatting and numbering automatically. Use the \verb$\ref{}$ and \verb$\label{}$ commands for cross-references.  
+\subsection{Filtering Dictionary:}
+In this step we iterate through the entire remaining dictionary removing any words that can not be the target word based on previous guess information. We decide if a word could be the possible target word based on the three factors of information detailed below. Each factor of information removes more words from our dictionary reducing our possible guesses.
 
-\subsection{Citing}
+\item \textbf{Letter State '1':} These are letters found in the target word and in the correct position. This information is recorded in a Regex statement as a positive entry. The Regex is used to match remaining words in the dictionary. If any words do not match the Regex statement containing a letter state '1' in said position the word will be deleted from the dictionary before the following guess.
 
-You might want to cite some sources of your information.  For instance, a reference for \LaTeX{} can be found here \cite{latexcompanion}.
+\item \textbf{Letter State '-1':} These are letters found in the target word but in the incorrect position. This information is both recorded in a list "letters-included" and in the Regex statement as a negative not entry (not[XYZ]). The Regex is again used to match remaining words in the dictionary where if a word does contain the negative not letter in said position it will be deleted. The list "letters-needed" is also iterated through for each word of the remaining dictionary. A word is removed if it does not contain all letters in the list "letters-needed"
 
-\subsection{How to compile \LaTeX{}}
-
-\LaTeX{} documents are prepared using markup language and need to be compiled to produce pdfs.  
-
-The easiest way is to use the \href{https://www.overleaf.com}{Overleaf service} - it's free for private projects.  Create an account and once you login you can create different projects (essentially different documents).  After clicking on ``New Project" select ``Upload project" and upload the \textit{cosc343report.zip} file where this file came from.  The template will open on the website and you'll be able to write your report through your browser, compile LaTeX online and have it saved on a remote server.  Later you just download the final pdf and submit as your report.    
-
-Alternately, you can install LaTeX compiler on your machine and compile the .tex file yourself.  On macOS you need to download and install \href{http://www.tug.org/mactex/downloading.html}{MacTeX}.  Then, using a program like \href{http://pages.uoregon.edu/koch/texshop/}{TexShop} (free), or \href{https://www.texpad.com/}{Texpad} (awesome, but not free) you can edit and compile a .tex file into a .pdf.
+\item \textbf{Letter State '0':} These are letters not found in the target word in any position. These letters are only added to the "letters-excluded" list. We then iterate through the remaining dictionary removing any words which contain any of these letters.
 
 
-\subsection{Tables and Figures}
+\subsection{Choosing From Filtered Dictionary:}
+In this step we now still have a potentially large filtered list of words which could possibly be the target word. Instead of randomly choosing one of these words we wish to choose one which will provide the most future information. We have two methods of selecting words from a dictionary which are,
 
-Use the table and tabular commands for basic tables --- see Table~\ref{tab:widgets}, for example. You can include a figure (JPEG, PNG or PDF) with the \verb$\includegraphics$ command as in the code for Figure~\ref{fig:frog} below.
+\item \textbf{Letter Frequency Ranking:} After we have a filtered the dictionary we want to rank remaining words based on letter frequency. We wish to favour words which are made up of letters that are common and can eliminate the most entries in the dictionary in subsequent guesses.  Before every guess the agent will take the new dictionary and re-compile a new variable called "dictionary-frequency" which contains a frequency for each letter. This process is done in the "Letter-Frequencies" method where the method counts each time it sees said letter. As an example the contents of "dictionary-frequency" may look something like \{'A': 44355 ... 'Z': 18565\} where the letter "A" has been seen 44,355 times and "Z" has been seen 18,565 times. Dictionary-frequency shows us what letters still remain in our dictionary, so for example if we remove all "A" letter words on the next dictionary compile A will go from 44,355 to 0 making Z's score of 18,565 much more competitive. These frequencies change as the dictionary is filtered so is updated each run. After we have letter frequencies we rank words in the remaining by assigning each word a score. The word score is simply calculated by adding together each letter score ignoring repeating letters to favour diversity of letters. If we didn't ignore repeating letters we tended to end up with words like "ASSES" ranking very highly without providing much information due to repeating letters. Every game run will also use the same starting word (not hard coded) of "AROSE" as this word has the most unique high value letters consisting of many vowels. Having letter frequency decide the next best guess from the remaining dictionary allows us to select a guess with the most high value letters to eliminate the most words from the dictionary for subsequent guesses and provide the most information.
 
-% Commands to include a figure:
-\begin{figure}
+\item \textbf{Easy Mode Guessing:} As the name suggests in easy mode we can improve our chances of winning by disregarding previous guess information to attempt to knock out more options than standard Letter Frequency Guessing above. This method works in specific scenarios where say we have a limited dictionary and all remaining words have a specific known pattern. For example in the case where our remaining dictionary is TRAIN, BRAIN, GRAIN, DRAIN our agent will only have a 25\% chance of winning with Letter Frequency Ranking. In this example the Agent currently knows that the target word is ?RAIN (contained in the Regex statement) and cannot gain any more information aside from single guesses. The dictionaries are much larger than this example giving the Agent a very limited chance far less than 25\% of winning in these situations. Now to improve our odds, instead of choosing a word from the current dictionary we will pick a word from the discarded dictionary. The word from the discarded dictionary will contain as many of the letters T, B, G, and D as possible. This word will never be the target word, however will hopefully knock out enough options that after our "Easy Mode Guess" we will only be left with one word and win on the subsequent guesses. The Agent will now iterate through the original unfiltered dictionary ranking words with a +1 for each of the desired letters it contains. In our example the word selected may be "DOUBT" as it contains the D,B and T. Now after this guess we will know exactly what the target word will be as this guess will tell us if the target word contains a D,B or T. If it does we will know the target word will be Drain, Brain, or Train respectively. If it contains none of these letters the target word must then be Grain. In the implementation the Agent will (in easy mode) switch between Easy Mode Guessing and Standard Letter Frequency Guessing. The Agent will switch to Easy Mode guessing when at least a third of the words letters are in a state of 1 (known location), the remaining dictionary size is no larger than 3x the word length and the dictionary is greater than three words to justify in order to justify using a guess on a word that will never win. These values were mostly calibrated from trial and error calibration. The reason we don't wish to allow easy mode guessing when the dictionary is too large or when their is not enough known Regex pattern is because it is likely that a standard Letter Frequency guess will provide more information as it's likely the remaining words don't share strict patterns such as ?RAIN in our example above. We also will never use Easy Mode guessing as our last move or if our dictionary is below 3 as this word will never be our final answer and we
+
+\section{Performance}
+
+Performance will be measured by the average score the Agent gets over 5000 runs at varying game configurations. The variables I will be analysing will be 'hard' mode and 'easy' mode where easy mode should always score lower than hard mode because in easy mode we are allowed to disregard earlier information and use "Easy Mode Guessing" detailed above. I will examine varying languages across English, Francis and Espanol as well as varying word length from 2 to 6 characters and discuss the performance differences between these configurations.
+\subsection{Assumptions}
+ I find from observations that after 5000+ game runs that initial seeds ceased having an impact with the average game score stabilizing and converging on the Agents true performance configuration as shown in Figure 1. For these reason the performance section will be comprised of these 5000+ average game values performed on seed 1.
+\begin{figure}[h]
+
+
 \centering
-\includegraphics[width=0.4\textwidth]{figures/frog.jpg}
-\caption{\label{fig:frog}This is a figure caption.}
+\includegraphics[width=1\textwidth]{COSC343 Assignmement 1/cosc343report/figures/assumption.png}
+\caption{\label{fig:assumption}Guess Averages Stabilizing Across Seeds.}
 \end{figure}
 
-\begin{table}
+\subsection{Results}
+
+Figure 2 shows the Average Guess Score with varying word lengths in both easy and hard modes. As we can see from the graph Average Guess Count increases steadily as word length decreases. Assuming equal dictionaries the longer the word the more unique the pattern of letters will be which means for each guess we will gain more information (by guessing with more letters) and be able to eliminate more words per unit of information.This is of course the opposite
+
+\begin{figure}[h]
 \centering
-\begin{tabular}{l|r}
-Item & Quantity \\\hline
-Widgets & 42 \\
-Gadgets & 13
-\end{tabular}
-\caption{\label{tab:widgets}An example table.}
-\end{table}
+\includegraphics[width=1\textwidth]{COSC343 Assignmement 1/cosc343report/figures/English.png}
+\caption{\label{fig:assumption}Average score with Varying Word Length.}
+\end{figure}
 
-\subsection{Mathematics}
-
-\LaTeX{} is great at typesetting mathematics. Let $X_1, X_2, \ldots, X_n$ be a sequence of independent and identically distributed random variables with $\text{E}[X_i] = \mu$ and $\text{Var}[X_i] = \sigma^2 < \infty$, and let
-$$S_n = \frac{X_1 + X_2 + \cdots + X_n}{n}
-      = \frac{1}{n}\sum_{i}^{n} X_i$$
-denote their mean. Then as $n$ approaches infinity, the random variables $\sqrt{n}(S_n - \mu)$ converge in distribution to a normal $\mathcal{N}(0, \sigma^2)$.
-
-\subsection{Lists}
-
-You can make lists with automatic numbering \dots
-
-\begin{enumerate}
-\item Like this,
-\item and this
-\end{enumerate}
-\dots or bullet points \dots
-\begin{itemize}
-\item Like this,
-\item and this
-\end{itemize}
 
 \section{Conclusion}
 
-Concluding remarks.  It could be a brief summary and/or comments on what you have learned/enjoyed/struggled with.      Depending on the space taken up by figures and formatting the report (excluding the Appendix) should be somewhere in the range of 3-5 pages.  Remember, it's not about creative space-wasting to hit the 4 pages, but about reporting on your work and results, so I can tell how much you have done and learned.  
-
-
-%The environment \thebibliography produces a list of references; such list will be titled "References". A parameter inside braces, 3 in the example, indicates the number of entries to be added; this parameter can not be greater than 99.
-
-%To create a bibliography entry the command \bibitem is used. A parameter inside braces is set to label this entry and can later be used as identifier for this reference. After the closing brace the text with the name of the author, the book title, publisher and so on is entered. 
-
-%Any choice of citation style is acceptable as long as you are consistent.
-
-\begin{thebibliography}{3}
-
-\bibitem{latexcompanion} 
-Michel Goossens, Frank Mittelbach, and Alexander Samarin. \textit{The \LaTeX\ Companion}. Addison-Wesley, Reading, Massachusetts, 1993.
-
-\end{thebibliography}
-
-
-% Activate the appendix
-% from now on sections are numerated with capital letters
-\appendix
-
-\renewcommand{\thesection}{Appendix \Alph{section}}
-
-\section{Some extra things}
-
-If you have anything more to add you might want to add it to the appendix.  For instance, some details could detract from readability if placed in the main body of the report, but might still be needed in the appendix for completeness and/or reference.  You don't need to have an appendix if you don't think you need one.
-
-\textbf{Do not stick code in the appendix} - any code should be submitted as a separate file (.py file for Python code).  
-
+Concluding remarks.  It could be a brief summary and/or comments on what you have learned/enjoyed/struggled with.      Depending on the space taken up by figures and formatting the report (excluding the Appendix) should be somewhere in the range of 3-5 pages.  Remember, it's not about creative space-wasting to hit the 4 pages, but about reporting on your work and results, so I can tell how much you have done and learned.
 
 \end{document}
