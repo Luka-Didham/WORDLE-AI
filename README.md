@@ -11,6 +11,7 @@ Dictionaries in the implementation contain all words at a given word size for a 
 The agent created is ranked by how few moves it can correctly "guess" the target word, with a penalty that doubles the score if the agent does not guess the word within the variable maximum guess threshold.
 
 ![](image1.png)
+![](image2.png)
 
 ### Usage
 Is automatically set to train for 50 games and then play 10 tournamnet games. Simply run,
