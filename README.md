@@ -14,5 +14,4 @@ The agent created is ranked by how few moves it can correctly "guess" the target
 ![](image2.png)
 
 ### Usage
-Is automatically set to train for 50 games and then play 10 tournamnet games. Simply run,
-`python wordle.py`
+Simply run, `python wordle.py`to start with standard settings or manually change settings in settings.py
